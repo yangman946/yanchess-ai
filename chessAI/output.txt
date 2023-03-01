@@ -1,0 +1,38 @@
+uci
+ucinewgame
+isready
+position startpos moves e2e4
+go movetime 1000
+uci
+ucinewgame
+isready
+position startpos moves e2e4
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5 f7f5 g5h5
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5 f7f5 g5h5 g7g6 h5h4
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5 f7f5 g5h5 g7g6 h5h4 d6e7 h4g3
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5 f7f5 g5h5 g7g6 h5h4 d6e7 h4g3 e7f6 g3f3
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5 f7f5 g5h5 g7g6 h5h4 d6e7 h4g3 e7f6 g3f3 e8f8 f3e3
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5 f7f5 g5h5 g7g6 h5h4 d6e7 h4g3 e7f6 g3f3 e8f8 f3e3 c7e5 e3d4
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5 f7f5 g5h5 g7g6 h5h4 d6e7 h4g3 e7f6 g3f3 e8f8 f3e3 c7e5 e3d4 b6b5 d4c3
+go movetime 1000
+position startpos moves e2e4 b7b6 f1b5 b8a6 d1g4 c7c6 b5c4 d8c7 g4f4 e7e6 c4d3 f8d6 f4g5 f7f5 g5h5 g7g6 h5h4 d6e7 h4g3 e7f6 g3f3 e8f8 f3e3 c7e5 e3d4 b6b5 d4c3 a8b8 c3b4
+go movetime 1000
