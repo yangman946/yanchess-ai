@@ -302,7 +302,7 @@ class BOT():
         self.currentItSearchDepth = 0
         self.abort = False
 
-        targetD = 6
+        targetD = 4
 
         for i in range(1, targetD):
             self.search(board, i, 0, -inf, inf)
@@ -416,14 +416,14 @@ class BOT():
 
     def play(self, board): # 
         try:
-            return chess.polyglot.MemoryMappedReader("data/polyglot/performance.bin").weighted_choice(board).move
+            return chess.polyglot.MemoryMappedReader("chessAI/data/polyglot/performance.bin").weighted_choice(board).move
         except:
             return self.startSearch(board)
 
         
 
 if __name__ == "__main__":
-    board = chess.Board("1k1r4/pp1b1R2/6pp/4p3/2B5/4Q3/PPP2B2/3K4 b - - 0 2")
+    board = chess.Board("r1b2r1k/2qnbppp/p2pBn2/1p6/3NP3/P1N1B1Q1/1PP2PPP/R4R1K b - - 0 15")
     #print(list(board.pieces))
     board.turn = False
     pr = cProfile.Profile()

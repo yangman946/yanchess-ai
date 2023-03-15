@@ -1,1 +1,0 @@
-r1b2r1k/2qnbppp/p2pBn2/1p6/3NP3/P1N1B1Q1/1PP2PPP/R4R1K b - - 0 15

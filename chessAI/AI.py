@@ -75,7 +75,6 @@ NOTES:
 
 '''
 
-
 import chess
 import chess.polyglot
 from chessUtil import Piece_Square_Tables
@@ -102,7 +101,6 @@ class HashEntry:
         self.flag = HashEntry.NONE
 
 
-# bot class
 class BOT():
 
     INFINITY = 137000000
@@ -111,11 +109,10 @@ class BOT():
     pv_table = {}
     contempt = [5, 2.5, 0]
 
-
     def __init__(self):
 
 
-    
+        
         self.saved_moved = ""
         self.results = []
 
@@ -166,7 +163,7 @@ class BOT():
 
         found_moves = {}
 
-        with chess.polyglot.open_reader("data/polyglot/performance.bin") as reader:
+        with chess.polyglot.open_reader("chessAI/data/polyglot/performance.bin") as reader:
             for entry in reader.find_all(board):
 
                 if not entry.weight in found_moves:
@@ -189,15 +186,7 @@ class BOT():
 
         return best_moves[0]
 
-    def getPhase(self, board):
-        l = len(board.piece_map())
 
-        if 20 <= l <= 32:
-            return 0
-        elif 10 <= l < 20:
-            return 1
-        else:
-            return 0
 
     def store_hash(self, pos, move, score, flag, depth):
         he = HashEntry()
@@ -257,15 +246,45 @@ class BOT():
             b.push(move)
 
         return san_list
+        
 
+
+    def SearchAllCaptures(self, board, alpha, beta, legal):
+        eval = self.evaluate(board) # change this (wtm = true for odd, false for even)
+        if (eval >= beta):
+            return beta
+        
+        alpha = max(alpha, eval)
+
+        captures = self.orderMoves(board, legal, True)
+        
+        
+        for m in captures:
+            #m = Move.from_uci(m)
+            board.push(m)
+            eval = -self.SearchAllCaptures(board, -beta, -alpha, board.legal_moves) # this line slow asf
+            board.pop()
+
+            if eval >= beta:
+                return beta
+            
+            
+            alpha = max(alpha, eval)
+
+        return alpha
+    
     ############################ EVALUATION AND SEARCH ################################
     @staticmethod
     def evaluate_EVAL(board):
+        l = len(board.piece_map())
+        phase = 0
+        if 10 <= l < 20:
+            phase = 1
 
-        #if board.is_checkmate():
-        #    return -1 * (BOT.INFINITY - board.ply())
-        #elif board.is_stalemate() or board.is_repetition() or board.is_insufficient_material():
-        #   return 0
+        if board.is_checkmate():
+            return board.ply() - BOT.INFINITY #* (-1 if board.turn else 1)
+        elif board.is_stalemate() or board.is_repetition() or board.is_insufficient_material():
+            return -(0 + BOT.contempt[phase]) #* (-1 if board.turn else 1)
         
         mg, eg, phase = 0, 0, 0
 
@@ -388,77 +407,55 @@ class BOT():
         sq -= pawn_influence
 
         return (sq + 0.1*mobility) * (-1 if board.turn == chess.BLACK else 1)
-    
+
+
     def getValues(self, piece):
         try:
             return Piece_Square_Tables.values[piece]
         except:
             return 0
 
-    def SEEFUNC(self, board, from_square, to_square):
-        attackers = list(board.attackers(board.turn, to_square)) # get all attackers
+    def SEEFUNC(self, board, from_square, to_square, threshold):
+        attackers = list(board.attackers(not board.turn, to_square)) # get all attackers
         captured_piece = board.piece_at(to_square)
-        value = self.getValues(captured_piece) # capture
+        value = self.getValues(captured_piece) # value of initially captured piece
+        if attackers:
+            piece_types = [board.piece_type_at(x) for x in attackers] # get the piece type of these attackers
+            lowest = min(piece_types, key=lambda x: Piece_Square_Tables.values[x]) # get least valuable attacker 
+            #attacker_index = piece_types.index(lowest) # get index of lowest piece
+        else:
+            lowest = None
+            
+
+        trophy = self.getValues(board.piece_at(from_square)) # value of piece making original capture
+        value -= trophy
+        trophy = self.getValues(lowest) # trophy set to least valuable attacker
 
 
-        for attacker in attackers:
-            if board.piece_at(attacker).piece_type <= board.piece_at(to_square).piece_type:
-                continue
-            if self.getValues(board.piece_at(from_square)) <= self.getValues(board.piece_at(to_square)):
-                continue
-
-            # Simulate the capture and evaluate the resulting position
-            captured_piece = board.piece_at(to_square)
-            board.remove_piece_at(to_square)
-            board.remove_piece_at(attacker)
-            attacking_score = -self.SEEFUNC(board, to_square, attacker)
-            board.set_piece_at(to_square, captured_piece)
-            value = max(value, attacking_score)
-
-        return value
-
-
-
-    # static exchange evaluation: check if move is a losing capture (false) or winning (true)
-    def see(self, board, move): 
-        toS = move.to_square # get contested square for move
-
-        # get value of piece moved
-        fromVal = self.getValues(board.piece_at(move.from_square)) 
-        # get value of capture
-        toVal = self.getValues(board.piece_at(toS))
-
-        if fromVal <= toVal: # capture with weaker piece 
-            return True # good capture
-        
-        if move.promotion or board.is_castling(move) or board.is_en_passant(move): # promotions, castles and en_passant are all good
+        if value >= threshold:
             return True
         
-        # get the defending pieces 
-        attackers = list(board.attackers(board.turn, toS))
-        if not attackers: # if no defending pieces, then free piece
-            return True # not defended
-        
-        # otherwise get the values of the defending pieces
-        piece_types = [board.piece_type_at(x) for x in attackers] # get the piece type of these attackers
-
-        if chess.PAWN in piece_types: # if a pawn is among these pieces, then dont bother capturing
-            return False
-
-        lowest = min(piece_types, key=lambda x: Piece_Square_Tables.values[x]) # get lowest piece 
-
-        if lowest < fromVal - toVal: # if the capture doesnt make up for the sacrifice, then bad move
+        if value + trophy < threshold:
             return False
         
-        # if we can capture with a pawn that would be grand
-        if fromVal == Piece_Square_Tables.values[chess.PAWN]:
+   
+        board.remove_piece_at(to_square)
+        board.remove_piece_at(from_square)
+
+        attackers = list(board.attackers(board.turn, to_square)) # get all attackers from side-to move
+        if attackers:
+            piece_types = [board.piece_type_at(x) for x in attackers] # get the piece type of these attackers
+            lowest = min(piece_types, key=lambda x: Piece_Square_Tables.values[x]) # get least valuable attacker 
+        else:
+            lowest = None
+
+        value += trophy
+        trophy = self.getValues(lowest)
+        if value - trophy >= threshold:
             return True
         
-        # at this point we should be winning, but we need to see if the opponent can eventually win back their material:
-
-
-        return False
-
+        if value < threshold:
+            return False
         
     # MOVE ORDERING
     def orderM(self, board, unscored_moves, pv_move, Quiscence):
@@ -555,8 +552,8 @@ class BOT():
         
         for m in captures:
 
-            #if not self.see(board, m):
-            #    continue
+            if not self.SEEFUNC(board.copy(), m.from_square, m.to_square, 100):
+                continue
 
             board.push(m)
             eval = -self.SearchAllCaptures(board, -beta, -alpha) # this line slow asf
@@ -573,9 +570,6 @@ class BOT():
             self.store_pvline(h, best_move)
 
         return alpha
-
-    
-
 
     def startSearch(self, board):
         best_move_FOUND = None
@@ -617,18 +611,10 @@ class BOT():
                 return best_move_FOUND
 
         return best_move_FOUND
-
-
+    
     def search(self, board, depth, alpha, beta, maxd, null_move):
 
 
-        move_score = -BOT.INFINITY
-
-        if board.is_checkmate():
-            return board.ply() - BOT.INFINITY #* (-1 if board.turn else 1)
-        elif board.is_stalemate() or board.is_repetition() or board.is_insufficient_material():
-            return -(0 + BOT.contempt[self.getPhase(board)]) #* (-1 if board.turn else 1)
-        
 
         # mate distance pruning ?
         
@@ -639,6 +625,20 @@ class BOT():
                 return alphaM
 
         # transposition tables
+
+        if null_move and not board.is_check() and board.ply() > 0 and depth >= 3 and len(board.piece_map()) >= 10: #NULL MOVE - also wanna prevent zugzwang 
+            board.push(chess.Move.null())
+            move_score = -1 * self.search(board, depth - 3, -beta, -beta + 1, maxd, False)
+            board.pop()
+
+            if move_score >= beta: # refutation is a capture
+                return beta
+
+        move_score = -BOT.INFINITY
+        best_score = -BOT.INFINITY
+
+        old_a = alpha
+        best_move = None
         h = board.fen()
 
         hash_entry = self.get_hash(h)
@@ -668,28 +668,16 @@ class BOT():
                     #move_score = -self.search(board, depth-2, -window[1], -window[0], maxd, null_move)
                     if value < beta:
                         return value
-        #elif depth <= 4:
-        #    if alpha == beta-1:
-        #        if self.evaluate(board) < beta - (200 + 2 * depth):
-        #            # razoring
-        #            result = self.SearchAllCaptures(board, alpha, beta)
-        #            if result < beta:
-        #                return result
+        elif depth <= 4:
+            if alpha == beta-1:
+                if self.evaluate(board) < beta - (200 + 2 * depth):
+                    # razoring
+                    result = self.SearchAllCaptures(board, alpha, beta)
+                    if result < beta:
+                        return result
 
 
-        if null_move and not board.is_check() and board.ply() > 0 and depth >= 3 and len(board.piece_map()) >= 10: #NULL MOVE - also wanna prevent zugzwang 
-            board.push(chess.Move.null())
-            move_score = -1 * self.search(board, depth - 3, -beta, -beta + 1, maxd, False)
-            board.pop()
 
-            if move_score >= beta: # refutation is a capture
-                return beta
-
-        move_score = -BOT.INFINITY
-        best_score = -BOT.INFINITY
-
-        old_a = alpha
-        best_move = None
             
         moves = self.orderM(board, l, None, False)
         #print(moves)
@@ -707,6 +695,7 @@ class BOT():
             #m = Move.from_uci(m)
             if i == 0:
                 board.push(m)
+                legal += 1
                 move_score = -self.search(board, depth-1, -beta, -alpha, maxd, null_move)
             else:
                 legal += 1
@@ -733,20 +722,25 @@ class BOT():
                         self.store_hash(board.fen(), best_move, beta, HashEntry.BETA, depth)
                         continue
                 """
+                R = 1
+                if m not in pvM:
+                    R += 2
+                if not wascheck:
+                    R += 1
                 
+                move_score = alpha + 1
 
                 # Aspiration window
                 window = (alpha, alpha+1) if alpha+1 < beta else (alpha, beta)
 
-                if i > 3 and depth > 3 and not board.is_check() and not board.is_capture(m) and m not in pvM and not wascheck: # LMR
-                    move_score = -self.search(board, depth-2, -window[1], -window[0], maxd, null_move)
-                else: move_score = -self.search(board, depth-1, -window[1], -window[0], maxd, null_move) # PVS
+                if i > 5 and depth >= 3 and not board.is_check() and not board.is_capture(m): # LMR
+                    move_score = -self.search(board, depth-R, -window[1], -window[0], maxd, null_move)
                 
                 # REDO PVS
-                if (move_score > alpha and move_score > beta): # PVS
-                    move_score = -self.search(board, depth-1, -beta, -alpha, maxd, null_move) # do full search
+                if (move_score > alpha): # PVS
+                    move_score = -self.search(board, depth-1, -window[1], -window[0], maxd, null_move) # do full search
                     if move_score > alpha:
-                        alpha = move_score
+                        move_score = -self.search(board, depth-1, -beta, -alpha, maxd, null_move) # do full search
                     
             
             board.pop()
@@ -787,10 +781,6 @@ class BOT():
         return alpha
 
 
-    ############################ BOT/MODULE INTERFACE #################################
-
-
-
     def tablebase(self, board) :
         if len(board.piece_map()) <= 7 :
             try :
@@ -816,9 +806,9 @@ class BOT():
 
 # testing
 if __name__ == "__main__":
-    #board = chess.Board("r2q1rk1/1p2bppp/2p5/p3Pb2/2n5/1QN1B1P1/PP2PPBP/2R2RK1 b - - 1 15")
+    board = chess.Board("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - - 0 1")
     #board = chess.Board("8/8/8/1K6/1p1kPb2/1Pp5/P1B5/8 b - - 6 64")
-    board = chess.Board("r1b2r1k/2qnbppp/p2pBn2/1p6/3NP3/P1N1B1Q1/1PP2PPP/R4R1K b - - 0 15")
+    #board = chess.Board("r1b2r1k/2qnb1pp/p2pNn2/1p6/4P3/P1N1B1Q1/1PP2PPP/R4R1K b - - 0 16")
     #board = chess.Board("8/7K/8/8/8/8/R7/7k w - - 0 1")
     #print(list(board.pieces))
     board.turn = False

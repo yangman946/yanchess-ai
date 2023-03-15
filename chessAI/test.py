@@ -128,7 +128,7 @@ class BOT():
 
         found_moves = {}
 
-        with chess.polyglot.open_reader("data/polyglot/performance.bin") as reader:
+        with chess.polyglot.open_reader("chessAI/data/polyglot/performance.bin") as reader:
             for entry in reader.find_all(board):
 
                 if not entry.weight in found_moves:
@@ -731,7 +731,7 @@ class BOT():
 # testing
 if __name__ == "__main__":
     #board = chess.Board("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - - 0 1")
-    board = chess.Board("r1b2r1k/2qnbppp/p2pBn2/1p6/3NP3/P1N1B1Q1/1PP2PPP/R4R1K b - - 0 15")
+    board = chess.Board("r1b2r1k/2qnb1pp/p2pNn2/1p6/4P3/P1N1B1Q1/1PP2PPP/R4R1K b - - 0 16")
     #board = chess.Board("8/8/8/1K6/1p1kPb2/1Pp5/P1B5/8 b - - 6 64")
     #board = chess.Board("8/7K/8/8/8/8/R7/7k w - - 0 1")
     #print(list(board.pieces))

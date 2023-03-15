@@ -85,7 +85,7 @@ class chess_GUI():
         self.master = customtkinter.CTk()
         self.master.resizable(False, False)
         self.master.title("Chess")
-        self.master.iconbitmap(f"{os.getcwd()}\\assets\\wP.ico")
+        self.master.iconbitmap(f"{os.getcwd()}\\chessAI\\assets\\wP.ico")
 
         f = customtkinter.CTkFrame(self.master, height = self.HEIGHT + 50, bg_color='transparent')
         f2 = customtkinter.CTkFrame(self.master, height= self.HEIGHT + 50, width=self.offset, corner_radius=20, fg_color='transparent')
@@ -286,7 +286,7 @@ class chess_GUI():
 
     def playsounds(self, sound):
         chnl = mixer.Channel(self.player)
-        v = mixer.Sound(f'{os.getcwd()}\\sounds\\{sound}.mp3')
+        v = mixer.Sound(f'{os.getcwd()}\\chessAI\\sounds\\{sound}.mp3')
         chnl.play(v)
 
 
@@ -338,7 +338,7 @@ class chess_GUI():
                 on_piece = True
                 if self.phase == 1 and pos not in self.moves: # if we clicked on of our own pieces after already selected one
                     self.reset()
-                self.floating = PhotoImage(file = f"{os.getcwd()}\\images\\{p}.png")
+                self.floating = PhotoImage(file = f"{os.getcwd()}\\chessAI\\images\\{p}.png")
                 #piece = Label(master=self.master, image=self.floating)
                 
                 self.w.create_image(e.x, e.y, image=self.floating, anchor="center", tag="piece")
@@ -815,7 +815,7 @@ class chess_GUI():
                 
                     self.w.create_rectangle(i*self.BLOCKX, j*self.BLOCKY, (i+1)*self.BLOCKX, (j+1)*self.BLOCKY, fill=color[opp], outline = '')
                     if ignorePiece == False:
-                        path = f"{os.getcwd()}\\images\\{p}.png"
+                        path = f"{os.getcwd()}\\chessAI\\images\\{p}.png"
                         #print(path)
                         self.img.append(PhotoImage(file = path))
                         
@@ -828,7 +828,7 @@ class chess_GUI():
                         
                         self.w.create_rectangle(i*self.BLOCKX, j*self.BLOCKY, (i+1)*self.BLOCKX, (j+1)*self.BLOCKY, fill=default[ind], outline = '')
                         self.w.create_oval(i*self.BLOCKX+5, j*self.BLOCKY+5, i*self.BLOCKX+70, j*self.BLOCKY+70, fill='', outline=color[opp], width=10)
-                        path = f"{os.getcwd()}\\images\\{p}.png"
+                        path = f"{os.getcwd()}\\chessAI\\images\\{p}.png"
                         #print(path)
                         self.img.append(PhotoImage(file = path))
                         
@@ -933,7 +933,7 @@ class chess_GUI():
                         c = "#e9352d"
                         self.w.create_rectangle(file*self.BLOCKX, (7-rank)*self.BLOCKY, (file+1)*self.BLOCKX, (7-rank+1)*self.BLOCKY, fill=c, outline = '')
 
-                    path = f"{os.getcwd()}\\images\\{f}{i.upper()}.png"
+                    path = f"{os.getcwd()}\\chessAI\\images\\{f}{i.upper()}.png"
                     #print(path)
                     self.img.append(PhotoImage(file = path))
                     
