@@ -1,2 +1,2 @@
 # yanchess-ai
-A UCI chess engine written in python
+A chess engine written in python
